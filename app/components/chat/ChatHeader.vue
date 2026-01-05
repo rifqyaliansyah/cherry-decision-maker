@@ -1,7 +1,7 @@
 <template>
     <div class="mockup-browser-toolbar hidden md:flex">
-        <div class="input input-sm w-full max-w-xs">ai-chat.app</div>
-        <button class="btn btn-sm btn-ghost ml-2" @click="$emit('new-chat')" :disabled="isLoading"
+        <div class="input input-sm w-full max-w-xs">Cherry Decision Maker - Powered by Gemini AI</div>
+        <button class="btn btn-sm btn-ghost ml-2" @click="handleNewChatClick" :disabled="isLoading"
             title="Start new conversation">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -12,8 +12,9 @@
     </div>
 
     <div class="flex md:hidden items-center justify-between bg-base-200 px-4 py-3 border-b border-base-300">
-        <h1 class="text-lg font-semibold">AI Chat</h1>
-        <button class="btn btn-sm btn-ghost btn-circle" @click="$emit('new-chat')" :disabled="isLoading"
+        <h1 class="text-lg font-semibold">Cherry Decision Maker</h1>
+        <p>Powered by Gemini AI</p>
+        <button class="btn btn-sm btn-ghost btn-circle" @click="handleNewChatClick" :disabled="isLoading"
             title="Start new conversation">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
@@ -28,5 +29,9 @@ defineProps({
     isLoading: Boolean
 })
 
-defineEmits(['new-chat'])
+const emit = defineEmits(['new-chat'])
+
+const handleNewChatClick = () => {
+    emit('new-chat')
+}
 </script>
