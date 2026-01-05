@@ -29,7 +29,7 @@ export class ApiClient {
     }
 
     async createSession() {
-        return this.request('/session/new', {
+        return this.request('/session', {
             method: 'POST'
         })
     }
@@ -38,6 +38,20 @@ export class ApiClient {
         return this.request('/chat', {
             method: 'POST',
             body: JSON.stringify({ sessionId, message })
+        })
+    }
+
+    async getSession(sessionId) {
+        return this.request(`/session/${sessionId}`)
+    }
+
+    async getChatHistory(sessionId) {
+        return this.request(`/chat/${sessionId}`)
+    }
+
+    async deleteSession(sessionId) {
+        return this.request(`/session/${sessionId}`, {
+            method: 'DELETE'
         })
     }
 }

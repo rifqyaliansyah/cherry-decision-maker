@@ -18,6 +18,8 @@ export const useChat = () => {
     const isLoading = ref(false)
     const chatContainer = ref(null)
     const sessionId = ref(null)
+    const decisionData = ref(null)
+    const calculationResults = ref(null)
 
     const scrollToBottom = async () => {
         await nextTick()
@@ -53,7 +55,7 @@ export const useChat = () => {
             if (!initialized) {
                 messages.value.push({
                     id: Date.now(),
-                    content: "Sorry, I couldn't connect to the server. Please make sure the backend is running.",
+                    content: "Maaf, saya tidak bisa terhubung ke server. Pastikan backend sedang berjalan.",
                     role: 'assistant',
                     createdAt: new Date().toISOString()
                 })
@@ -83,12 +85,37 @@ export const useChat = () => {
             const response = await apiClient.sendMessage(sessionId.value, userMessage)
 
             if (response.success) {
+                // Clean message from JSON artifacts
+                let cleanMessage = response.message
+
+                // Remove JSON blocks that might be in the message
+                cleanMessage = cleanMessage.replace(/```json\s*\{[\s\S]*?\}\s*```/g, '')
+                cleanMessage = cleanMessage.replace(/\{[\s\S]*?"options"[\s\S]*?\}/g, '')
+                cleanMessage = cleanMessage.trim()
+
+                // Add AI response
                 messages.value.push({
                     id: Date.now(),
-                    content: response.message,
+                    content: cleanMessage,
                     role: 'assistant',
                     createdAt: new Date().toISOString()
                 })
+
+                // Update decision data if available
+                if (response.decisionData) {
+                    decisionData.value = response.decisionData
+                    console.log('Decision data updated:', response.decisionData)
+                }
+
+                // Update calculation results if available
+                if (response.calculated) {
+                    calculationResults.value = {
+                        calculated: true,
+                        results: response.results,
+                        summary: response.summary
+                    }
+                    console.log('Calculation completed:', calculationResults.value)
+                }
             } else {
                 throw new Error(response.error || 'Failed to get response')
             }
@@ -100,7 +127,7 @@ export const useChat = () => {
 
             messages.value.push({
                 id: Date.now(),
-                content: "Sorry, I encountered an error. Please try again.",
+                content: "Maaf, terjadi kesalahan. Silakan coba lagi.",
                 role: 'assistant',
                 createdAt: new Date().toISOString()
             })
@@ -114,6 +141,16 @@ export const useChat = () => {
     const newChat = async () => {
         if (isLoading.value) return
 
+        // Delete old session if exists
+        if (sessionId.value) {
+            try {
+                await apiClient.deleteSession(sessionId.value)
+            } catch (error) {
+                console.error('Failed to delete session:', error)
+            }
+        }
+
+        // Reset state
         messages.value = [
             {
                 id: 1,
@@ -123,6 +160,8 @@ export const useChat = () => {
             }
         ]
         inputMessage.value = ''
+        decisionData.value = null
+        calculationResults.value = null
 
         // Create new session
         await initSession()
@@ -135,6 +174,8 @@ export const useChat = () => {
         isLoading,
         chatContainer,
         sessionId,
+        decisionData,
+        calculationResults,
         scrollToBottom,
         sendMessage,
         newChat,
